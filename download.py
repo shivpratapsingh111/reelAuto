@@ -1,3 +1,4 @@
+import os
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
@@ -10,19 +11,22 @@ from selenium.webdriver.support import expected_conditions as EC
 import time
 import random
 
+os.environ["DISPLAY"] = ":99"
+
 # Path to GeckoDriver
 geckodriver_path = "/usr/local/bin/geckodriver"
 
 # Path to your Firefox profile
-firefox_profile_path = "/home/cyrusop/.mozilla/firefox/5m1hacmd.reelAutomate"
+firefox_profile_path = "/root/.mozilla/firefox/49z3oup8.default-esr"
 
 # Set up Firefox options and service
 options = Options()
-service = FirefoxService(executable_path=geckodriver_path)
+service = FirefoxService(executable_path=geckodriver_path, log_path="/tmp/geckodriver.log", service_args=["--log", "trace"])
 
 # Load Firefox profile
-profile = FirefoxProfile(firefox_profile_path)
-options.profile = profile
+options.add_argument("-profile")
+options.add_argument(firefox_profile_path)
+options.add_argument('--headless')
 
 # Initialize the WebDriver
 driver = webdriver.Firefox(service=service, options=options)
@@ -43,16 +47,19 @@ def download_reel(reel_url):
         time.sleep(1)
 
     print("Pasting the URL...")
+    time.sleep(2)
 
     # Wait until the input element is available, then paste the URL
     input_element = WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.CSS_SELECTOR, "input[name='url']"))
     )
     input_element.clear()  # Clear any existing text in the input field
+    time.sleep(3)
     input_element.send_keys(reel_url)
     time.sleep(1)
 
     print("Clicking download button...")
+    time.sleep(2)
     download_button = WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable((By.CSS_SELECTOR, "button[type='submit']"))
     )
@@ -62,14 +69,17 @@ def download_reel(reel_url):
     wait_for_save_button()
 
     print("Clicking save button...")
+    time.sleep(3)
     save_button = WebDriverWait(driver, 10).until(
         EC.element_to_be_clickable((By.CSS_SELECTOR, "a.button.is-white.is-outlined"))
     )
+    time.sleep(1)
     save_button.click()
 
     print("Waiting for download to complete...")
 
     # Switch back to the Instagram tab without closing the download tab
+    time.sleep(2)
     driver.switch_to.window(driver.window_handles[0])
 
 def wait_for_save_button():
@@ -87,6 +97,7 @@ def main():
     print('Opened browser')
 
     # Wait for Instagram page to load completely
+    time.sleep(3)
     WebDriverWait(driver, 10).until(
         EC.presence_of_element_located((By.CSS_SELECTOR, "body"))
     )
